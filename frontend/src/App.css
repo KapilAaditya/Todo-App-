@@ -1,0 +1,76 @@
+/* Container for the entire todo list
+.todos-container {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Individual Todo Card 
+.todo-card {
+    background-color: #ffffff;
+    padding: 20px;
+    margin-bottom: 16px;
+    border-radius: 8px;
+    border-left: 5px solid #007bff; /* Blue strip on the left side 
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+    display: flex;
+    flex-direction: columndas;
+    gap: 8px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Subtle hover effect for the cards 
+.todo-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Title styling 
+.todo-title {
+    margin: 0;
+    font-size: 1.4rem;
+    color: #212529;
+    font-weight: 600;
+}
+
+/* Description styling 
+.todo-desc {
+    margin: 0 0 12px 0;
+    font-size: 1rem;
+    color: #6c757d;
+    line-height: 1.5;
+}
+
+/* Base button styling 
+.todo-btn {
+    align-self: flex-start; /* Keeps the button from stretching full width 
+    padding: 10px 20px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* "Mark as complete" state (Blue) 
+.btn-pending {
+    background-color: #007bff;
+    color: #ffffff;
+}
+
+.btn-pending:hover {
+    background-color: #0056b3;
+}
+
+/* "Completed" state (Green & Disabled style) 
+.btn-completed {
+    background-color: #28a745;
+    color: #ffffff;
+    cursor: not-allowed;
+    opacity: 0.85;
+} */
