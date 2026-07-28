@@ -1,79 +1,82 @@
-require('dotenv').config();
-const express = require('express');
-const { createtodo, showtodo } = require('./types');
-const { Todo } = require('./database/db');
-const cors = require('cors');
+require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
 
-const PORT = process.env.PORT || 5000;
+const { createtodo, showtodo } = require("./types");
+const { Todo } = require("./database/db");
+const { Query } = require("mongoose");
 
 const app = express();
 
 app.use(express.json());
 app.use(cors());
 
-// Create Todo
-app.post('/todo', async (req, res) => {
-    try {
-        const createPayload = req.body;
+const PORT = process.env.PORT || 5000;
 
-        const parsedPayload = createtodo.safeParse(createPayload);
+// Create Todo
+app.post("/todo", async (req, res) => {
+    try {
+        const parsedPayload = createtodo.safeParse(req.body);
 
         if (!parsedPayload.success) {
             return res.status(400).json({
-                msg: 'Check your inputs'
+                msg: "Invalid Input"
             });
         }
 
-        const newTodo = await Todo.create({
-            title: createPayload.title,
-            description: createPayload.description,
+        const todo = await Todo.create({
+            title: req.body.title,
+            description: req.body.description,
             completed: false
         });
 
         res.status(201).json({
-            msg: 'Todo has been created',
-            todo: newTodo
+            msg: "Todo Created",
+            todo
         });
 
     } catch (err) {
-        console.error(err);
+        console.log(err);
 
         res.status(500).json({
-            msg: 'Internal Server Error'
+            msg: "Internal Server Error"
         });
     }
 });
 
 // Get Todos
-app.get('/todos', async (req, res) => {
-    try {
-        const todos = await Todo.find({});
+app.get("/todos", async (req, res) => {
 
-        // console.log('Todos:', todos);
+    try {
+
+        const todos = await Todo.find({});
 
         res.json({
             todos
         });
 
     } catch (err) {
-        console.error(err);
+
+        console.log(err);
 
         res.status(500).json({
-            msg: 'Internal Server Error'
+            msg: "Internal Server Error"
         });
+
     }
+
 });
 
 // Mark Completed
-app.put('/completed', async (req, res) => {
-    try {
-        const updatePayload = req.body;
+app.put("/completed", async (req, res) => {
 
-        const parsedPayload = showtodo.safeParse(updatePayload);
+    try {
+
+        const parsedPayload = showtodo.safeParse(req.body);
 
         if (!parsedPayload.success) {
             return res.status(400).json({
-                msg: 'Something went wrong'
+                msg: "Invalid Input"
             });
         }
 
@@ -82,21 +85,72 @@ app.put('/completed', async (req, res) => {
                 _id: req.body.id
             },
             {
-                complete: true
+                completed: true
             }
         );
 
         res.json({
-            msg: 'Todo updated'
+            msg: "Todo Updated"
         });
 
     } catch (err) {
-        console.error(err);
+
+        console.log(err);
 
         res.status(500).json({
-            msg: 'Internal Server Error'
+            msg: "Internal Server Error"
         });
+
     }
+
+});
+app.get("/search", async (req, res) => {
+    const search = req.query.search
+    try {
+
+        const todos = await Todo.find({
+            title: {
+                $regex: search,
+                $option: "i"
+            },
+            description: {
+                $regex: search,
+                $option: "i"
+            }
+        })
+    }
+    catch (err) {
+
+        console.log(err);
+
+        res.status(500).json({
+            msg: "Internal Server Error"
+        });
+
+    }
+
+})
+
+app.delete("/todo/:id", async (req, res) => {
+
+    try {
+
+        await Todo.deleteOne({
+            _id: req.params.id
+        });
+
+        res.json({
+            msg: "Todo Deleted"
+        });
+
+    } catch (err) {
+
+        res.status(500).json({
+            msg: "Internal Server Error"
+        });
+
+    }
+
 });
 
 app.listen(PORT, () => {

@@ -1,45 +1,101 @@
-import "./todos.css"
+import { useState } from "react";
+import "./todos.css";
+
 export function Todos({ todos, setTodos }) {
-    return (
-        <>
-            <div className="todos-container">
-                {todos.map((singleTodo, index) => {
-                    return (
-                        <div key={index} className="todo-card">
-                            <h1 className="todo-title"
-                            >Title :- {singleTodo.title}</h1>
-                            <h2 className="todo-description">Description :- {singleTodo.description}</h2>
-                            
-                            <button onClick={() => {
-                                fetch("http://localhost:4000/completed", {
-                                    method: "PUT",
-                                    body: JSON.stringify({
-                                        id: singleTodo._id
-                                    }),
-                                    headers: {
-                                        "Content-Type": "application/json"
-                                    }
-                                })
-                                .then((response) => {
-                                    if (response.ok) {
-                                        setTodos(prevTodo =>
-                                            prevTodo.map(item =>
-                                                item._id === singleTodo._id ? { ...item, complete: true } : item
-                                            )
-                                        );
-                                        alert("Saved in database!");
-                                    } else {
-                                        alert("Cannot save in the database");
-                                    }
-                                })
-                                .catch((err) => console.log(err));
-                            }}>
-                                {singleTodo.complete === true ? "Completed" : "Mark as complete"}
-                            </button>
-                        </div>
-                    );
-                })}
-            </div>
-        </>
+  const [expanded, setExpanded] = useState({});
+
+  function markCompleted(id) {
+    fetch("http://localhost:5000/completed", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ id })
+    }).then(() => {
+      setTodos((prev) =>
+        prev.map((todo) =>
+          todo._id === id ? { ...todo, completed: true } : todo
+        )
+      );
+    });
+  }
+
+ function deleteTodo(id){
+
+    const confirmDelete = window.confirm(
+        "Are you sure you want to delete this todo?"
     );
+
+
+    if(!confirmDelete){
+        return;
+    }
+
+
+    fetch(`http://localhost:5000/todo/${id}`,{
+
+        method:"DELETE"
+
+    })
+
+    .then(()=>{
+
+        setTodos(prev =>
+            prev.filter(todo => todo._id !== id)
+        );
+
+    })
+
+    .catch(err => console.log(err));
+
+}
+
+  return (
+    <div className="todos-container">
+      {todos.map((todo) => {
+        const desc = todo.description || "";
+        const isExpanded = expanded[todo._id];
+
+        return (
+          <div className="todo-card" key={todo._id}>
+            <h2>{todo.title}</h2>
+
+            <p>
+              {isExpanded ? desc : desc.slice(0, 120)}
+
+              {desc.length > 120 && (
+                <span
+                  className="read-more"
+                  onClick={() =>
+                    setExpanded((prev) => ({
+                      ...prev,
+                      [todo._id]: !prev[todo._id]
+                    }))
+                  }
+                >
+                  {isExpanded ? " Read Less" : "... Read More"}
+                </span>
+              )}
+            </p>
+
+            <div className="btn-group">
+              <button
+                className={`complete-btn ${todo.completed ? "completed" : ""}`}
+                onClick={() => markCompleted(todo._id)}
+              >
+                {todo.completed ? "Completed" : "Mark Complete"}
+              </button>
+
+              <button
+                className="delete-btn"
+                onClick={() => deleteTodo(todo._id)}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
 }

@@ -1,76 +1,191 @@
-/* Container for the entire todo list
-.todos-container {
-    max-width: 600px;
-    margin: 40px auto;
-    padding: 20px;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f8f9fa;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+/* ===========================
+   THEME VARIABLES & RESET
+=========================== */
+:root {
+  --primary: #6366f1;
+  --primary-hover: #4f46e5;
+  --primary-glow: rgba(99, 102, 241, 0.25);
+  --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+  --card-bg: rgba(255, 255, 255, 0.05);
+  --card-border: rgba(255, 255, 255, 0.1);
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
 }
 
-/* Individual Todo Card 
-.todo-card {
-    background-color: #ffffff;
-    padding: 20px;
-    margin-bottom: 16px;
-    border-radius: 8px;
-    border-left: 5px solid #007bff; /* Blue strip on the left side 
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
-    display: flex;
-    flex-direction: columndas;
-    gap: 8px;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+* {
+  box-sizing: border-box;
 }
 
-/* Subtle hover effect for the cards 
-.todo-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-gradient);
+  color: var(--text-main);
+  background-attachment: fixed;
 }
 
-/* Title styling 
-.todo-title {
-    margin: 0;
-    font-size: 1.4rem;
-    color: #212529;
-    font-weight: 600;
+#root {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: clamp(1rem, 3vw, 2.5rem);
 }
 
-/* Description styling 
-.todo-desc {
-    margin: 0 0 12px 0;
-    font-size: 1rem;
-    color: #6c757d;
-    line-height: 1.5;
+.app-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 5rem);
 }
 
-/* Base button styling 
-.todo-btn {
-    align-self: flex-start; /* Keeps the button from stretching full width 
-    padding: 10px 20px;
-    font-size: 0.95rem;
-    font-weight: 600;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s ease;
+.main-content {
+  flex: 1;
 }
 
-/* "Mark as complete" state (Blue) 
-.btn-pending {
-    background-color: #007bff;
-    color: #ffffff;
+/* ===========================
+   SEARCH BAR
+=========================== */
+.search-container {
+  margin: 35px auto 25px auto;
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
 
-.btn-pending:hover {
-    background-color: #0056b3;
+.search-input {
+  width: min(450px, 100%);
+  padding: 0.85rem 1.25rem;
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  background: rgba(15, 23, 42, 0.6);
+  color: var(--text-main);
+  font-size: 0.95rem;
+  outline: none;
+  transition: all 0.25s ease;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
-/* "Completed" state (Green & Disabled style) 
-.btn-completed {
-    background-color: #28a745;
-    color: #ffffff;
-    cursor: not-allowed;
-    opacity: 0.85;
-} */
+.search-input::placeholder {
+  color: #64748b;
+}
+
+.search-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+  background: rgba(15, 23, 42, 0.85);
+}
+
+/* ===========================
+   UPGRADED RESPONSIVE FOOTER
+=========================== */
+.app-footer {
+  margin: 70px auto 20px auto;
+  width: min(700px, 100%);
+  background: rgba(30, 41, 59, 0.5);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.app-footer:hover {
+  border-color: rgba(99, 102, 241, 0.3);
+  box-shadow: 0 15px 40px rgba(99, 102, 241, 0.15);
+}
+
+.footer-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.footer-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.footer-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #818cf8;
+  background: rgba(99, 102, 241, 0.15);
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.footer-text {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #cbd5e1;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.footer-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.75rem 1.4rem;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: #ffffff;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+  transition: all 0.25s ease;
+}
+
+.footer-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(79, 70, 229, 0.5);
+}
+
+.external-icon {
+  transition: transform 0.2s ease;
+}
+
+.footer-btn:hover .external-icon {
+  transform: translate(2px, -2px);
+}
+
+/* ===========================
+   MEDIA QUERIES
+=========================== */
+@media (max-width: 640px) {
+  .app-footer {
+    padding: 1.25rem 1.5rem;
+    margin-top: 50px;
+  }
+
+  .footer-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 1.2rem;
+  }
+
+  .footer-info {
+    align-items: center;
+  }
+
+  .footer-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 0.85rem;
+  }
+}
