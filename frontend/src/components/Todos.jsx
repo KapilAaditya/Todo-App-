@@ -1,11 +1,11 @@
 import { useAuth } from "@clerk/clerk-react";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_URL = import.meta.env.VITE_API_URL || "https://todo-app-axsl.onrender.com";
 
 export function Todos({ todos, setTodos }) {
   const { getToken } = useAuth();
 
-  // Toggle Completed Status
+  // Toggle todo completion state
   const toggleComplete = async (id, currentStatus) => {
     try {
       const token = await getToken();
@@ -16,20 +16,29 @@ export function Todos({ todos, setTodos }) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ id, completed: !currentStatus }),
+        body: JSON.stringify({
+          id: id,
+          completed: !currentStatus, // Sends toggled state
+        }),
       });
 
       if (res.ok) {
+        // Optimistically update React state instantly
         setTodos((prev) =>
-          prev.map((t) => (t._id === id ? { ...t, completed: !currentStatus } : t))
+          prev.map((t) =>
+            (t._id || t.id) === id ? { ...t, completed: !currentStatus } : t
+          )
         );
+      } else {
+        const data = await res.json();
+        console.error("Failed to update todo status:", data.msg);
       }
     } catch (err) {
       console.error("Error updating todo status:", err);
     }
   };
 
-  // Delete Todo Handler
+  // Delete todo
   const deleteTodo = async (id) => {
     try {
       const token = await getToken();
@@ -42,8 +51,10 @@ export function Todos({ todos, setTodos }) {
       });
 
       if (res.ok) {
-        // Remove deleted todo from local state instantly
         setTodos((prev) => prev.filter((t) => (t._id || t.id) !== id));
+      } else {
+        const data = await res.json();
+        console.error("Failed to delete todo:", data.msg);
       }
     } catch (err) {
       console.error("Error deleting todo:", err);
@@ -59,7 +70,7 @@ export function Todos({ todos, setTodos }) {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full mb-16">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
       {todos.map((todo) => {
         const todoId = todo._id || todo.id;
 
@@ -68,7 +79,6 @@ export function Todos({ todos, setTodos }) {
             key={todoId}
             className="bg-slate-900/65 backdrop-blur-xl border border-white/10 hover:border-purple-500/40 rounded-2xl p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 shadow-lg hover:shadow-purple-500/10 min-h-[190px] relative overflow-hidden group"
           >
-            {/* Top glowing accent line on hover */}
             <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
             <div>
@@ -87,9 +97,7 @@ export function Todos({ todos, setTodos }) {
               )}
             </div>
 
-            {/* Action Buttons Row */}
             <div className="flex items-center justify-between gap-2 mt-4 pt-3 border-t border-white/5">
-              {/* Mark Complete Button */}
               <button
                 onClick={() => toggleComplete(todoId, todo.completed)}
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
@@ -101,7 +109,6 @@ export function Todos({ todos, setTodos }) {
                 {todo.completed ? "✓ Done" : "Mark Done"}
               </button>
 
-              {/* Delete Button */}
               <button
                 onClick={() => deleteTodo(todoId)}
                 title="Delete task"
