@@ -7,6 +7,7 @@ const { Todo } = require("./database/db");
 const { Query } = require("mongoose");
 const path = require("path")
 const fs = require("fs")
+const cors = require('cors')
 
 const app = express();
 
@@ -167,10 +168,9 @@ if (fs.existsSync(publicDir)) {
         res.sendFile(path.join(publicDir, "index.html"));
     });
 }
-const cors = require('cors');
 
 app.use(cors({
-    origin: 'https://todo-app-axsl.onrender.com/', // or specify your frontend Render URL: "https://your-frontend.onrender.com"
+    origin: 'https://todo-app-axsl.onrender.com', // 👈 Removed trailing slash '/'
     credentials: true
 }));
 
