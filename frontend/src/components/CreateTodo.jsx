@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "@clerk/clerk-react";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_URL = import.meta.env.VITE_API_URL || "https://todo-app-axsl.onrender.com";
 
 export function CreateTodo({ setTodos }) {
   const [title, setTitle] = useState("");
@@ -23,15 +23,22 @@ export function CreateTodo({ setTodos }) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ title, description }),
+        body: JSON.stringify({
+          title: title.trim(),
+          description: description.trim(),
+        }),
       });
 
+      const data = await res.json();
+
       if (res.ok) {
-        const newTodo = await res.json();
-        // Update local state with newly created todo
-        setTodos((prev) => [newTodo.todo || newTodo, ...prev]);
+        // Optimistically append new todo to the UI list
+        const newTodo = data.todo || data;
+        setTodos((prev) => [newTodo, ...prev]);
         setTitle("");
         setDescription("");
+      } else {
+        console.error("Backend error:", data.msg || "Failed to create task");
       }
     } catch (err) {
       console.error("Error creating todo:", err);
@@ -47,7 +54,6 @@ export function CreateTodo({ setTodos }) {
     >
       <h2 className="text-xl font-bold text-slate-100">Create New Task</h2>
 
-      {/* Title Input */}
       <input
         type="text"
         placeholder="Task Title..."
@@ -57,21 +63,14 @@ export function CreateTodo({ setTodos }) {
         required
       />
 
-      {/* Auto-expanding Description Textarea */}
       <textarea
         placeholder="Task Description (optional)..."
         value={description}
         rows={2}
-        onChange={(e) => {
-          setDescription(e.target.value);
-          // Dynamically adjust height up to max-h-48 (12rem / 192px)
-          e.target.style.height = "auto";
-          e.target.style.height = `${Math.min(e.target.scrollHeight, 192)}px`;
-        }}
-        className="w-full px-5 py-3.5 min-h-[80px] max-h-48 rounded-xl border border-white/10 bg-slate-950/70 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-4 focus:ring-purple-500/20 transition-all resize-none overflow-y-auto"
+        onChange={(e) => setDescription(e.target.value)}
+        className="w-full px-5 py-3.5 min-h-[80px] rounded-xl border border-white/10 bg-slate-950/70 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-4 focus:ring-purple-500/20 transition-all resize-none"
       />
 
-      {/* Submit Button */}
       <button
         type="submit"
         disabled={loading}
