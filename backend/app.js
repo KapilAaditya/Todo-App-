@@ -167,6 +167,12 @@ if (fs.existsSync(publicDir)) {
         res.sendFile(path.join(publicDir, "index.html"));
     });
 }
+const cors = require('cors');
+
+app.use(cors({
+    origin: 'https://todo-app-axsl.onrender.com/', // or specify your frontend Render URL: "https://your-frontend.onrender.com"
+    credentials: true
+}));
 
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
