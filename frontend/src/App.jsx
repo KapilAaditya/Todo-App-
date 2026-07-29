@@ -3,7 +3,7 @@ import { useAuth, SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/c
 import { CreateTodo } from "./components/CreateTodo";
 import { Todos } from "./components/Todos";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_URL = import.meta.env.VITE_API_URL || "https://todo-app-axsl.onrender.com";
 
 function App() {
   const [todos, setTodos] = useState([]);
