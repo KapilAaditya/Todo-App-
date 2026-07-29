@@ -5,6 +5,8 @@ const cors = require("cors");
 const { createtodo, showtodo } = require("./types");
 const { Todo } = require("./database/db");
 const { Query } = require("mongoose");
+const path = require("path")
+const fs = require("fs")
 
 const app = express();
 
@@ -152,6 +154,19 @@ app.delete("/todo/:id", async (req, res) => {
     }
 
 });
+// Get absolute path to the static frontend build folder and import path 
+const publicDir = path.join(process.cwd(), "public");
+
+// Check if frontend build exists before serving inport fs 
+if (fs.existsSync(publicDir)) {
+    // Serve static frontend assets (CSS, JS, images)
+    app.use(express.static(publicDir));
+
+    // Fallback all frontend routes to index.html for React client-side routing
+    app.get("/*splat", (req, res) => {
+        res.sendFile(path.join(publicDir, "index.html"));
+    });
+}
 
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
