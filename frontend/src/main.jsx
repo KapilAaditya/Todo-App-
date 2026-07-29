@@ -2,13 +2,15 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { ClerkProvider } from '@clerk/clerk-react';
 import App from './App.jsx';
-import './App.css'
+import './App.css';
 
-const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
+// Pass your actual key as a fallback if the env variable isn't injected
+const PUBLISHABLE_KEY = 
+  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || 
+  "pk_test_dXNhYmxlLW11dHQtNy5jbGVyay5hY2NvdW50cy5kZXYk"; // 👈 Paste your pk_test_ key here
 
-// Safety check to tell you immediately if Vite can't read the file
 if (!PUBLISHABLE_KEY) {
-  console.error("Clerk Key Error:VITE_CLERK_PUBLISHABLE_KEY is undefined. Check your .env file placement!")
+  throw new Error("Missing VITE_CLERK_PUBLISHABLE_KEY");
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(
