@@ -155,7 +155,7 @@ app.delete("/todo/:id", async (req, res) => {
 
 });
 // Get absolute path to the static frontend build folder and import path 
-const publicDir = path.join(process.cwd(), "public");
+const publicDir = path.join(__dirname, "public");
 
 // Check if frontend build exists before serving inport fs 
 if (fs.existsSync(publicDir)) {
