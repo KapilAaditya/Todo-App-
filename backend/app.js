@@ -1,163 +1,218 @@
 require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const fs = require("fs");
 
-const { createtodo, showtodo } = require("./types");
+require("./cron");
+
+const { createtodo } = require("./types");
 const { Todo } = require("./database/db");
 
 const app = express();
 
-// 1. Configure CORS at the top before routes
+const PORT = process.env.PORT || 5000;
+
 const allowedOrigins = [
-  'https://todo-app-axsl.onrender.com',
-  'http://localhost:5173',
-  'http://localhost:5000'
+    "https://todo-app-axsl.onrender.com",
+    "http://localhost:5173",
+    "http://localhost:5000"
 ];
 
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('CORS not allowed for this origin'));
-    }
-  },
-  credentials: true
-}));
+app.use(
+    cors({
+        origin(origin, callback) {
+            if (!origin || allowedOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                callback(new Error("CORS not allowed"));
+            }
+        },
+        credentials: true
+    })
+);
 
 app.use(express.json());
 
-const PORT = process.env.PORT || 5000;
+/* ---------------- HEALTH ---------------- */
 
-// Create Todo
+app.get("/health", (req, res) => {
+    res.status(200).json({
+        status: "OK",
+        message: "Server is healthy",
+        time: new Date().toISOString()
+    });
+});
+
+/* ---------------- CREATE TODO ---------------- */
+
 app.post("/todo", async (req, res) => {
-  try {
-    const parsedPayload = createtodo.safeParse(req.body);
+    try {
+        const parsedPayload = createtodo.safeParse(req.body);
 
-    if (!parsedPayload.success) {
-      return res.status(400).json({
-        msg: "Invalid Input"
-      });
+        if (!parsedPayload.success) {
+            return res.status(400).json({
+                msg: "Invalid Input"
+            });
+        }
+
+        const todo = await Todo.create({
+            title: req.body.title,
+            description: req.body.description,
+            completed: false
+        });
+
+        res.status(201).json({
+            msg: "Todo Created",
+            todo
+        });
+
+    } catch (err) {
+        console.error(err);
+
+        res.status(500).json({
+            msg: "Internal Server Error"
+        });
     }
-
-    const todo = await Todo.create({
-      title: req.body.title,
-      description: req.body.description,
-      completed: false
-    });
-
-    res.status(201).json({
-      msg: "Todo Created",
-      todo
-    });
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({
-      msg: "Internal Server Error"
-    });
-  }
 });
 
-// Get Todos
+/* ---------------- GET TODOS ---------------- */
+
 app.get("/todos", async (req, res) => {
-  try {
-    const todos = await Todo.find({});
-    res.json({ todos });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({
-      msg: "Internal Server Error"
-    });
-  }
+    try {
+        const todos = await Todo.find({});
+
+        res.json({
+            todos
+        });
+
+    } catch (err) {
+        console.error(err);
+
+        res.status(500).json({
+            msg: "Internal Server Error"
+        });
+    }
 });
 
-// Toggle / Mark Completed
-app.put("/completed", async (req, res) => {
-  try {
-    const parsedPayload = showtodo.safeParse(req.body);
+/* ---------------- COMPLETE TODO ---------------- */
 
-    if (!parsedPayload.success) {
-      return res.status(400).json({
-        msg: "Invalid Input"
-      });
+app.put("/completed", async (req, res) => {
+    try {
+        const { id, completed } = req.body;
+
+        if (!id) {
+            return res.status(400).json({
+                msg: "Todo ID is required"
+            });
+        }
+
+        await Todo.updateOne(
+            {
+                _id: id
+            },
+            {
+                completed: completed ?? true
+            }
+        );
+
+        res.json({
+            msg: "Todo Updated"
+        });
+
+    } catch (err) {
+        console.error(err);
+
+        res.status(500).json({
+            msg: "Internal Server Error"
+        });
+    }
+});
+
+/* ---------------- SEARCH ---------------- */
+
+app.get("/search", async (req, res) => {
+
+    try {
+
+        const search = req.query.search || "";
+
+        const todos = await Todo.find({
+
+            $or: [
+
+                {
+                    title: {
+                        $regex: search,
+                        $options: "i"
+                    }
+                },
+                {
+                    description: {
+                        $regex: search,
+                        $options: "i"
+                    }
+                }
+            ]
+        });
+
+        res.json({
+            todos
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+            msg: "Internal Server Error"
+        });
+
     }
 
-    // Support toggling completed state directly
-    const completedState = typeof req.body.completed === "boolean" 
-      ? req.body.completed 
-      : true;
-
-    await Todo.updateOne(
-      { _id: req.body.id },
-      { completed: completedState }
-    );
-
-    res.json({
-      msg: "Todo Updated"
-    });
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({
-      msg: "Internal Server Error"
-    });
-  }
 });
 
-// Search Route (Fixed MongoDB $options and response return)
-app.get("/search", async (req, res) => {
-  const search = req.query.search || "";
-  try {
-    const todos = await Todo.find({
-      $or: [
-        { title: { $regex: search, $options: "i" } },
-        { description: { $regex: search, $options: "i" } }
-      ]
-    });
+/* ---------------- DELETE ---------------- */
 
-    res.json({ todos });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({
-      msg: "Internal Server Error"
-    });
-  }
-});
-
-// Delete Todo
 app.delete("/todo/:id", async (req, res) => {
-  try {
-    await Todo.deleteOne({
-      _id: req.params.id
-    });
 
-    res.json({
-      msg: "Todo Deleted"
-    });
+    try {
 
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({
-      msg: "Internal Server Error"
-    });
-  }
+        await Todo.deleteOne({
+            _id: req.params.id
+        });
+
+        res.json({
+            msg: "Todo Deleted"
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+            msg: "Internal Server Error"
+        });
+
+    }
+
 });
 
-// Serve static frontend build if hosted together
+/* ---------------- SERVE REACT ---------------- */
+
 const publicDir = path.join(__dirname, "public");
 
 if (fs.existsSync(publicDir)) {
-  app.use(express.static(publicDir));
+    app.use(express.static(publicDir));
 
-    app.get("{*splat}", (req, res) => {
+    app.get("/*path", (req, res) => {
         res.sendFile(path.join(publicDir, "index.html"));
     });
-
 }
 
+/* ---------------- START SERVER ---------------- */
+
 app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
