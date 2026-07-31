@@ -1,6 +1,6 @@
 require("dotenv").config();
 
-const { CronJob } = require("cron");
+const { CronJob } = require("node-cron");
 const http = require("node:http");
 const https = require("node:https");
 
