@@ -1,40 +1,40 @@
-require("dotenv").config();
+// require("dotenv").config();
 
-const cron = require("node-cron");
-const http = require("node:http");
-const https = require("node:https");
+// const cron = require("node-cron");
+// const http = require("node:http");
+// const https = require("node:https");
 
-const job = cron.schedule(
-  "*/15 * * * *",
-  () => {
-    const base = process.env.BACKEND_URL;
+// const job = cron.schedule(
+//   "*/15 * * * *",
+//   () => {
+//     const base = process.env.BACKEND_URL;
 
-    if (!base) {
-      console.log("❌ BACKEND_URL is not set in .env");
-      return;
-    }
+//     if (!base) {
+//       console.log("❌ BACKEND_URL is not set in .env");
+//       return;
+//     }
 
-    const url = new URL("/health", base).href;
-    const client = url.startsWith("https:") ? https : http;
+//     const url = new URL("/health", base).href;
+//     const client = url.startsWith("https:") ? https : http;
 
-    client
-      .get(url, (res) => {
-        res.resume();
+//     client
+//       .get(url, (res) => {
+//         res.resume();
 
-        if (res.statusCode === 200) {
-          console.log(`✅ Health check successful (${res.statusCode})`);
-        } else {
-          console.log(`❌ Health check failed (${res.statusCode})`);
-        }
-      })
-      .on("error", (err) => {
-        console.error("❌ Health check error:", err.message);
-      });
-  },
-  {
-    scheduled: true,
-    timezone: "Asia/Kolkata",
-  }
-);
+//         if (res.statusCode === 200) {
+//           console.log(`✅ Health check successful (${res.statusCode})`);
+//         } else {
+//           console.log(`❌ Health check failed (${res.statusCode})`);
+//         }
+//       })
+//       .on("error", (err) => {
+//         console.error("❌ Health check error:", err.message);
+//       });
+//   },
+//   {
+//     scheduled: true,
+//     timezone: "Asia/Kolkata",
+//   }
+// );
 
-module.exports = job;
+// module.exports = job;

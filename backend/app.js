@@ -5,7 +5,7 @@ const cors = require("cors");
 const path = require("path");
 const fs = require("fs");
 
-require("./cron");
+// require("./cron");
 
 const { createtodo } = require("./types");
 const { Todo } = require("./database/db");
@@ -37,13 +37,13 @@ app.use(express.json());
 
 /* ---------------- HEALTH ---------------- */
 
-app.get("/health", (req, res) => {
-    res.status(200).json({
-        status: "OK",
-        message: "Server is healthy",
-        time: new Date().toISOString()
-    });
-});
+// app.get("/health", (req, res) => {
+//     res.status(200).json({
+//         status: "OK",
+//         message: "Server is healthy",
+//         time: new Date().toISOString()
+//     });
+// });
 
 /* ---------------- CREATE TODO ---------------- */
 
